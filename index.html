@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+<title>Food Fest Billing - IT Stall</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    margin:0;
+    padding:10px;
+    background: linear-gradient(135deg,#ffecd2,#fcb69f);
+}
+
+h2{
+    text-align:center;
+    margin-bottom:5px;
+}
+
+.info{
+    text-align:center;
+    font-size:14px;
+}
+
+.items{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-top:10px;
+}
+
+.item{
+    background:white;
+    border-radius:15px;
+    padding:6px;
+    text-align:center;
+    box-shadow:0 5px 10px rgba(0,0,0,0.15);
+    cursor:pointer;
+    transition:0.2s ease;
+    animation:fadeIn 0.5s ease-in-out;
+}
+
+.item:hover{
+    transform:scale(1.05);
+}
+
+.item:active{
+    transform:scale(0.95);
+}
+
+.item img{
+    width:100%;
+    height:80px;
+    object-fit:cover;
+    border-radius:10px;
+}
+
+.item p{
+    font-size:14px;
+    margin:5px 0 0 0;
+    font-weight:bold;
+}
+
+.cart{
+    margin-top:15px;
+    background:white;
+    padding:12px;
+    border-radius:15px;
+    box-shadow:0 5px 10px rgba(0,0,0,0.2);
+}
+
+.cart-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
+    font-size:14px;
+}
+
+.qty-btn{
+    background:orange;
+    color:white;
+    border:none;
+    padding:4px 8px;
+    border-radius:6px;
+    margin:0 2px;
+}
+
+.remove-btn{
+    background:red;
+    color:white;
+    border:none;
+    padding:4px 8px;
+    border-radius:6px;
+}
+
+.green-btn{
+    background:green;
+    color:white;
+    border:none;
+    padding:10px;
+    width:100%;
+    border-radius:8px;
+    margin-top:8px;
+    font-size:16px;
+}
+
+.red-btn{
+    background:red;
+    color:white;
+    border:none;
+    padding:10px;
+    width:100%;
+    border-radius:8px;
+    margin-top:5px;
+    font-size:16px;
+}
+
+input{
+    width:100%;
+    padding:8px;
+    font-size:16px;
+    margin-top:5px;
+    border-radius:6px;
+    border:1px solid gray;
+}
+
+@keyframes fadeIn{
+    from{opacity:0;transform:translateY(10px);}
+    to{opacity:1;transform:translateY(0);}
+}
+</style>
+</head>
+
+<body>
+
+<h1>🍹 Femila Mam Payalugada</h1>
+<div class="info">
+Bill No: <span id="billNo">1</span><br>
+<span id="dateTime"></span>
+</div>
+
+<div class="items" id="itemList"></div>
+
+<div class="cart">
+<h3>🛒 Cart</h3>
+<div id="cartItems"></div>
+
+<h3>Total: ₹<span id="total">0</span></h3>
+
+<label>Amount Given:</label>
+<input type="number" id="paid" oninput="calculateBalance()">
+
+<h3>Balance: ₹<span id="balance">0</span></h3>
+
+<h3>Today's Sales: ₹<span id="dailyTotal">0</span></h3>
+
+<button class="green-btn" onclick="completeSale()">Complete Sale</button>
+<button class="red-btn" onclick="resetCart()">Cancel</button>
+
+</div>
+
+<script>
+
+const items = [
+{name:"Bun", price:20, image:"bun.jpg"},
+{name:"Pani Puri", price:30, image:"panipuri.jpg"},
+{name:"Full Jar Soda", price:50, image:"soda.jpg"},
+{name:"Lime Juice", price:25, image:"limejuice.jpg"},
+{name:"Lime Soda", price:30, image:"limesoda.jpg"},
+{name:"Mojito", price:40, image:"mojito.jpg"},
+{name:"Aval Milk", price:35, image:"avalmilk.jpg"},
+{name:"Coconut Shake", price:45, image:"coconut.jpg"}
+];
+
+let cart = {};
+let total = 0;
+let billNo = 1;
+let dailyTotal = 0;
+
+function loadItems(){
+    let html="";
+    items.forEach(item=>{
+        html+=`
+        <div class="item" onclick="addItem('${item.name}',${item.price})">
+            <img src="${item.image}">
+            <p>${item.name} ₹${item.price}</p>
+        </div>`;
+    });
+    document.getElementById("itemList").innerHTML=html;
+}
+
+function addItem(name,price){
+    if(cart[name]){
+        cart[name].qty++;
+    }else{
+        cart[name]={price:price,qty:1};
+    }
+    total+=price;
+    updateCart();
+}
+
+function updateCart(){
+    let html="";
+    for(let item in cart){
+        html+=`
+        <div class="cart-item">
+            ${item} x ${cart[item].qty}
+            <div>
+                <button class="qty-btn" onclick="changeQty('${item}',-1)">-</button>
+                <button class="qty-btn" onclick="changeQty('${item}',1)">+</button>
+                <button class="remove-btn" onclick="removeItem('${item}')">X</button>
+            </div>
+        </div>`;
+    }
+    document.getElementById("cartItems").innerHTML=html;
+    document.getElementById("total").innerText=total;
+}
+
+function changeQty(name,change){
+    cart[name].qty+=change;
+    total+=cart[name].price*change;
+    if(cart[name].qty<=0){
+        delete cart[name];
+    }
+    updateCart();
+}
+
+function removeItem(name){
+    total-=cart[name].price*cart[name].qty;
+    delete cart[name];
+    updateCart();
+}
+
+function calculateBalance(){
+    let paid=document.getElementById("paid").value;
+    let balance=paid-total;
+    document.getElementById("balance").innerText=balance>=0?balance:0;
+}
+
+function completeSale(){
+    if(total===0) return;
+    dailyTotal+=total;
+    document.getElementById("dailyTotal").innerText=dailyTotal;
+    billNo++;
+    document.getElementById("billNo").innerText=billNo;
+    resetCart();
+}
+
+function resetCart(){
+    cart={};
+    total=0;
+    document.getElementById("cartItems").innerHTML="";
+    document.getElementById("total").innerText=0;
+    document.getElementById("paid").value="";
+    document.getElementById("balance").innerText=0;
+}
+
+function updateDateTime(){
+    let now=new Date();
+    document.getElementById("dateTime").innerText=now.toLocaleString();
+}
+
+loadItems();
+updateDateTime();
+setInterval(updateDateTime,1000);
+
+</script>
+
+</body>
+</html>
