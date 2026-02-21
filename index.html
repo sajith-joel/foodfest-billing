@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 <title>Food Fest Billing - IT Stall</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -13,10 +13,7 @@ body{
     background: linear-gradient(135deg,#ffecd2,#fcb69f);
 }
 
-h2{
-    text-align:center;
-    margin-bottom:5px;
-}
+h1{text-align:center;}
 
 .info{
     text-align:center;
@@ -38,28 +35,16 @@ h2{
     box-shadow:0 5px 10px rgba(0,0,0,0.15);
     cursor:pointer;
     transition:0.2s ease;
-    animation:fadeIn 0.5s ease-in-out;
 }
 
-.item:hover{
-    transform:scale(1.05);
-}
-
-.item:active{
-    transform:scale(0.95);
-}
+.item:hover{transform:scale(1.05);}
+.item:active{transform:scale(0.95);}
 
 .item img{
     width:100%;
     height:80px;
     object-fit:cover;
     border-radius:10px;
-}
-
-.item p{
-    font-size:14px;
-    margin:5px 0 0 0;
-    font-weight:bold;
 }
 
 .cart{
@@ -78,44 +63,29 @@ h2{
     font-size:14px;
 }
 
-.qty-btn{
-    background:orange;
-    color:white;
+.qty-btn,.remove-btn{
     border:none;
     padding:4px 8px;
     border-radius:6px;
     margin:0 2px;
+    color:white;
 }
 
-.remove-btn{
-    background:red;
-    color:white;
-    border:none;
-    padding:4px 8px;
-    border-radius:6px;
-}
+.qty-btn{background:orange;}
+.remove-btn{background:red;}
 
-.green-btn{
-    background:green;
-    color:white;
+.green-btn,.red-btn{
     border:none;
     padding:10px;
     width:100%;
     border-radius:8px;
     margin-top:8px;
     font-size:16px;
+    color:white;
 }
 
-.red-btn{
-    background:red;
-    color:white;
-    border:none;
-    padding:10px;
-    width:100%;
-    border-radius:8px;
-    margin-top:5px;
-    font-size:16px;
-}
+.green-btn{background:green;}
+.red-btn{background:red;}
 
 input{
     width:100%;
@@ -125,17 +95,13 @@ input{
     border-radius:6px;
     border:1px solid gray;
 }
-
-@keyframes fadeIn{
-    from{opacity:0;transform:translateY(10px);}
-    to{opacity:1;transform:translateY(0);}
-}
 </style>
 </head>
 
 <body>
 
 <h1>🍹 IT-Stall</h1>
+
 <div class="info">
 Bill No: <span id="billNo">1</span><br>
 <span id="dateTime"></span>
@@ -158,26 +124,50 @@ Bill No: <span id="billNo">1</span><br>
 
 <button class="green-btn" onclick="completeSale()">Complete Sale</button>
 <button class="red-btn" onclick="resetCart()">Cancel</button>
-
 </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDly_TTlTpVxnE7REoD9HKz6zi3BxrMRzU",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "YOUR_DATABASE_URL",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_ID",
+  appId: "YOUR_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
+window.database = database;
+window.ref = ref;
+window.push = push;
+window.set = set;
+</script>
 
 <script>
 
 const items = [
-{name:"Bun", price:20, image:"bun.jpg"},
-{name:"Pani Puri", price:30, image:"panipuri.jpg"},
-{name:"Full Jar Soda", price:50, image:"soda.jpg"},
-{name:"Lime Juice", price:25, image:"limejuice.jpg"},
-{name:"Lime Soda", price:30, image:"limesoda.jpg"},
-{name:"Mojito", price:40, image:"mojito.jpg"},
-{name:"Aval Milk", price:35, image:"avalmilk.jpg"},
-{name:"Coconut Shake", price:45, image:"coconut.jpg"}
+{name:"Bun", price:20, image:"https://via.placeholder.com/150"},
+{name:"Pani Puri", price:30, image:"https://via.placeholder.com/150"},
+{name:"Full Jar Soda", price:50, image:"https://via.placeholder.com/150"},
+{name:"Lime Juice", price:25, image:"https://via.placeholder.com/150"},
+{name:"Lime Soda", price:30, image:"https://via.placeholder.com/150"},
+{name:"Mojito", price:40, image:"https://via.placeholder.com/150"},
+{name:"Aval Milk", price:35, image:"https://via.placeholder.com/150"},
+{name:"Coconut Shake", price:45, image:"https://via.placeholder.com/150"}
 ];
 
 let cart = {};
 let total = 0;
 let billNo = 1;
-let dailyTotal = 0;
+let dailyTotal = Number(localStorage.getItem("dailyTotal")) || 0;
+
+document.getElementById("dailyTotal").innerText = dailyTotal;
 
 function loadItems(){
     let html="";
@@ -234,17 +224,46 @@ function removeItem(name){
 }
 
 function calculateBalance(){
-    let paid=document.getElementById("paid").value;
-    let balance=paid-total;
-    document.getElementById("balance").innerText=balance>=0?balance:0;
+    let paid = Number(document.getElementById("paid").value) || 0;
+    let balance = paid - total;
+    document.getElementById("balance").innerText = balance >= 0 ? balance : 0;
 }
 
 function completeSale(){
-    if(total===0) return;
-    dailyTotal+=total;
-    document.getElementById("dailyTotal").innerText=dailyTotal;
+    if(total === 0){
+        alert("Cart is empty!");
+        return;
+    }
+
+    const paidAmount = Number(document.getElementById("paid").value) || 0;
+
+    if(paidAmount < total){
+        alert("Insufficient payment!");
+        return;
+    }
+
+    const orderData = {
+        billNo: billNo,
+        items: cart,
+        total: total,
+        paid: paidAmount,
+        balance: paidAmount - total,
+        time: new Date().toLocaleString()
+    };
+
+    const ordersRef = window.ref(window.database, "orders");
+    const newOrderRef = window.push(ordersRef);
+    window.set(newOrderRef, orderData);
+
+    dailyTotal += total;
+    localStorage.setItem("dailyTotal", dailyTotal);
+    document.getElementById("dailyTotal").innerText = dailyTotal;
+
     billNo++;
-    document.getElementById("billNo").innerText=billNo;
+    document.getElementById("billNo").innerText = billNo;
+
+    alert("Sale Completed & Saved!");
+
     resetCart();
 }
 
@@ -258,39 +277,14 @@ function resetCart(){
 }
 
 function updateDateTime(){
-    let now=new Date();
-    document.getElementById("dateTime").innerText=now.toLocaleString();
+    document.getElementById("dateTime").innerText = new Date().toLocaleString();
 }
 
 loadItems();
 updateDateTime();
 setInterval(updateDateTime,1000);
 
-</script><script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-  import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDly_TTlTpVxnE7REoD9HKz6zi3BxrMRzU",
-    authDomain: "foodfest-billing.firebaseapp.com",
-    databaseURL: "https://foodfest-billing-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "foodfest-billing",
-    storageBucket: "foodfest-billing.firebasestorage.app",
-    messagingSenderId: "493966223511",
-    appId: "1:493966223511:web:588d69df715f920e06e1d2",
-    measurementId: "G-0MKYL6YQK1"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
-
-  // Make available globally
-  window.database = database;
-  window.ref = ref;
-  window.push = push;
-  window.set = set;
 </script>
 
 </body>
 </html>
-
