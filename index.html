@@ -291,10 +291,61 @@ loadItems();
 updateDateTime();
 setInterval(updateDateTime,1000);
 
+</script><script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+  import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDly_TTlTpVxnE7REoD9HKz6zi3BxrMRzU",
+    authDomain: "foodfest-billing.firebaseapp.com",
+    databaseURL: "https://foodfest-billing-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "foodfest-billing",
+    storageBucket: "foodfest-billing.firebasestorage.app",
+    messagingSenderId: "493966223511",
+    appId: "1:493966223511:web:588d69df715f920e06e1d2",
+    measurementId: "G-0MKYL6YQK1"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+
+  // Make available globally
+  window.database = database;
+  window.ref = ref;
+  window.push = push;
+  window.set = set;
+</script>
+    <script>
+function placeOrder() {
+
+    const college = document.getElementById("collegeName").value;
+    const landmark = document.getElementById("landmark").value;
+    const totalAmount = document.getElementById("total").innerText;
+
+    if (!college) {
+        alert("Please enter college name");
+        return;
+    }
+
+    const orderData = {
+        college: college,
+        landmark: landmark,
+        total: totalAmount,
+        time: new Date().toLocaleString()
+    };
+
+    const ordersRef = window.ref(window.database, "orders");
+
+    const newOrderRef = window.push(ordersRef);
+
+    window.set(newOrderRef, orderData);
+
+    alert("Order Placed Successfully!");
+
+}
 </script>
 
 </body>
 </html>
-
 
 
